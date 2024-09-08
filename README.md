@@ -34,7 +34,7 @@ For example, when asking about the constellations of a particular character, mos
 The idea is to allow web pages from both the wiki and other websites to be equally considered so the sources can be diversified during the generation stage. While cleaning the data and opting in for a better embedding model can help mitigate this problem, it can also be addressed during the retrieval stage. By merging the results of the top-k wiki documents and the top-k documents from the other websites using Python's ``zip()`` function, the LLM can consider the documents from both the wiki and the other websites at the same time. This can allow the documents from other websites to fill in the gap if the embedding model fails to query specific information from the wiki documents.
 
 ## Usage
-First, download [Ollama](https://ollama.com/download)
+First, download Ollama with this [link](https://ollama.com/download).
 
 To install the LLM and embedding models, run
 ```
