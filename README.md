@@ -4,7 +4,7 @@ An experimental RAG (Retrieval Augmented Generation) application that assists Ll
 
 This is an extension to my Local Llama RAG project from this [repo](https://github.com/jian-li1/local-llama-rag). More information about the code and implementation can be found there.
 
-The LLM and embedding model used are Llama 3.1 8B and ``mxbai-embed-large``, respectively.
+The LLM and embedding model used are Llama 3.1 8B and ``mxbai-embed-large``, respectively, both of which are launched with [Ollama](https://ollama.com).
 
 ## Motivation
 
@@ -34,26 +34,30 @@ For example, when asking about the constellations of a particular character, mos
 The idea is to allow web pages from both the wiki and other websites to be equally considered so the sources can be diversified during the generation stage. While cleaning the data and opting in for a better embedding model can help mitigate this problem, it can also be addressed during the retrieval stage. By merging the results of the top-k wiki documents and the top-k documents from the other websites using Python's ``zip()`` function, the LLM can consider the documents from both the wiki and the other websites at the same time. This can allow the documents from other websites to fill in the gap if the embedding model fails to query specific information from the wiki documents.
 
 ## Usage
-First, install the required packages:
+First, download [Ollama](https://ollama.com/download)
+
+To install the LLM and embedding models, run
+```
+ollama pull llama3.1
+ollama pull mxbai-embed-large
+```
+
+Next, install the required packages:
 ```
 pip install requirements.txt
 ```
 
 To start the crawler, run
 ```
-python crawler.py [-h] --url URL --base BASE --out OUT [--depth DEPTH] [--exclude [EXCLUDE ...]] [--no-update]
+crawler.py [-h] --url URL [URL ...] --base BASE --out OUT [--depth DEPTH] [--exclude [EXCLUDE ...]] [--no-update]
 ```
-or for the multithreaded crawler, run
-```
-crawler_multi.py [-h] --url URL [URL ...] --base BASE --out OUT [--depth DEPTH] [--exclude [EXCLUDE ...]] [--no-update]
-```
-See ``python crawler.py -h`` or ``python crawler_multi.py -h`` for more information about the argument options.
+See ``python crawler.py -h`` for more information about the argument options.
 
-Next, to build the database, run
+To build the database, run
 ```
 python build_database.py [-h] -d DIR [DIR ...] -o OUT -n NAME [-u]
 ```
-Make sure to set the ``-n`` argument to ``wiki`` and ``guide`` for the wiki web pages and the other web pages, respectively. See ``python build_database.py -h`` for more information about the argument options.
+See ``python build_database.py -h`` for more information about the argument options. Make sure to set the ``-n`` argument to ``wiki`` and ``guide`` to create separate collections for the wiki web pages and the other web pages, respectively.
 
 Finally, the RAG application can be run under ``genshin_rag.ipynb``.
 
