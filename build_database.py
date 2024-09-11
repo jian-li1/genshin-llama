@@ -1,7 +1,8 @@
 from langchain_chroma import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import MarkdownTextSplitter
 from langchain_community.embeddings.ollama import OllamaEmbeddings
 from langchain.schema import Document
+from langchain_community.vectorstores.utils import filter_complex_metadata
 from typing import List
 from tqdm import tqdm
 import argparse
@@ -9,14 +10,14 @@ import os
 import json
 import time
 import threading
-import re
 
 num_threads = 6
 embeddings = OllamaEmbeddings(model="mxbai-embed-large", num_thread=num_threads)
 
 # Initialize a text splitter with specified chunk size and overlap
-text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=500, chunk_overlap=250
+text_splitter = MarkdownTextSplitter(
+    # chunk_size = 800, chunk_overlap = 100
+    chunk_size = 500, chunk_overlap = 250
 )
 
 def assign_chunk_id(chunks: List[Document]):
@@ -66,9 +67,13 @@ def upsert_doc(doc: Document, update: bool):
     
     # Add new chunks
     if len(new_chunks) > 0:
+        # Filter out bad metadata
+        new_chunks = filter_complex_metadata(new_chunks)
         db.add_documents(documents=new_chunks, ids=new_chunk_ids)
     # Update existing chunks
     if len(update_chunks) > 0:
+        # Filter out bad metadata
+        update_chunks = filter_complex_metadata(update_chunks)
         db.update_documents(documents=update_chunks, ids=update_chunk_ids)
     
     chunks.clear()
@@ -88,11 +93,7 @@ def process_documents(json_files: List[str], update: bool):
 
         with open(file) as f:
             data = json.load(f)
-        if (metadata := data.get("metadata")) and (content := data.get("page_content")) and not None in metadata.values():
-            # Remove newlines and tabs
-            content = re.sub(r"\n\n+ *", "\n\n", content)
-            content = re.sub(r"\t\t*", " ", content)
-
+        if (metadata := data.get("metadata")) and (content := data.get("page_content")):
             doc = Document(metadata=metadata, page_content=content)
             upsert_doc(doc, update)
             processed_files += 1
@@ -100,7 +101,7 @@ def process_documents(json_files: List[str], update: bool):
             bad_files += 1
         
         json_files.set_postfix_str(f"Added: {processed_files}, Failed: {bad_files}, File: {file}")
-        del metadata, content, doc, data
+        # del metadata, content, doc, data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
