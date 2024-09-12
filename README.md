@@ -33,6 +33,8 @@ For example, when asking about the constellations of a particular character, mos
 
 The idea is to allow web pages from both the wiki and other websites to be equally considered so the sources can be diversified during the generation stage. While cleaning the data and opting in for a better embedding model can help mitigate this problem, it can also be addressed during the retrieval stage. By merging the results of the top-k wiki documents and the top-k documents from the other websites using Python's ``zip()`` function, the LLM can consider the documents from both the wiki and the other websites at the same time. This can allow the documents from other websites to fill in the gap if the embedding model fails to query specific information from the wiki documents.
 
+Although this may sound like a naive approach, it is a starting point for aggregating information from multiple sources and providing better context for questions of different categories (i.e. lore questions vs character build questions).
+
 ## Usage
 First, download Ollama with this [link](https://ollama.com/download).
 
@@ -44,12 +46,12 @@ ollama pull mxbai-embed-large
 
 Next, install the required packages:
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 To start the crawler, run
 ```
-crawler.py [-h] --url URL [URL ...] --base BASE --out OUT [--depth DEPTH] [--exclude [EXCLUDE ...]] [--no-update]
+crawler.py [-h] --url URL [URL ...] --base BASE --out OUT [--depth DEPTH] [--css [CSS ...]] [--exclude [EXCLUDE ...]] [--no-update]
 ```
 See ``python crawler.py -h`` for more information about the argument options.
 
@@ -81,4 +83,6 @@ Mualani has a total of 6 Constellations. Here they are listed in bullet points:
 Please let me know if you'd like me to rephrase or clarify any part of my answer!
 ```
 
-However, the application is still far from my ultimate goal. It contains some flaws, but part of the reason is due to the pre-processing stage and the embedding model. As mentioned in my other [repo](https://github.com/jian-li1/local-llama-rag?tab=readme-ov-file#future-improvements), the page content crawled by my crawler is messy, which often contains irrelevant text from navigation bars and sidebars, for example. Moreover, the embedding model fails to query prompts with specific keywords, resulting in an entire list of irrelevant documents. One of the initial steps to addressing these issues could be cleaning the web pages to reduce junk and improve document retrieval. Overall, I believe this project has potential and I'll most certainly continue to look for solutions and make improvements to this application.
+However, the application is still far from my ultimate goal. It contains many flaws which stems from document chunking and vector embeddings. Recently, I made improvements in preprocessing the data by filtering out web pages with CSS selectors and converting the HTML content to a cleaner markdown text. Still, there problems that arise in document retrieval because some parts of useful information are sometimes cut off and the chunks might also contain extraneous infomration that the LLM might misinterpret. Moreover, the embedding model sometimes fails to query prompts with specific keywords, which returns an entire list of irrelevant documents. I'll need to consider advanced techniques for querying and evaluating documents, such as rerankers.
+
+Overall, I believe this project has potential and I'll most certainly continue to look for solutions and make improvements to this application.
